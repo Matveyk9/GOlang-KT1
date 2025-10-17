@@ -7,19 +7,16 @@ import (
 	"net/http"
 )
 
-// Структура модели
 type User struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
-// Простое хранилище пользователей
 var users = []User{
 	{ID: 1, Name: "Alice"},
 	{ID: 2, Name: "Bob"},
 }
 
-// Обработчик GET /users
 func getUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(users); err != nil {
@@ -27,7 +24,6 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Обработчик GET /users/{id}
 func getUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -46,7 +42,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 func main() {
 	// Роутинг
 	http.HandleFunc("/users", getUsers)
-	http.HandleFunc("/users/1", getUser) // пример статического роутинга
+	http.HandleFunc("/users/1", getUser) 
 
 	port := 8080
 	fmt.Printf("Сервер запущен на http://localhost:%d\n", port)
