@@ -1,32 +1,43 @@
 package main
 
 import (
-    "bufio"
-    "fmt"
-    "os"
-    "strings"
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+	"time"
 )
 
-func isPalindrome(s string) bool {
-    s = strings.ToLower(s)
-    n := len(s)
-    for i := 0; i < n/2; i++ {
-        if s[i] != s[n-1-i] {
-            return false
-        }
-    }
-    return true
+type Response struct {
+	Message   string    `json:"message"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 func main() {
-    reader := bufio.NewReader(os.Stdin)
-    fmt.Print("Введите строку: ")
-    input, _ := reader.ReadString('\n')
-    input = strings.TrimSpace(input)
+	http.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+	
+			http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
+			return
+		}
 
-    if isPalindrome(input) {
-        fmt.Println("Строка является палиндромом.")
-    } else {
-        fmt.Println("Строка не является палиндромом.")
-    }
+		resp := Response{
+			Message:   "Привет! Это JSON-ответ от Go сервиса",
+			Timestamp: time.Now(),
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+
+			http.Error(w, fmt.Sprintf("Ошибка кодирования JSON: %v", err), http.StatusInternalServerError)
+			return
+		}
+	})
+
+	port := 8080
+	fmt.Printf("Сервер запущен на http://localhost:%d/api\n", port)
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
+
+		log.Fatalf("Не удалось запустить сервер: %v", err)
+	}
 }
