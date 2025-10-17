@@ -2,35 +2,36 @@ package main
 
 import (
     "fmt"
+    "math/rand"
+    "time"
 )
 
-func main() {
-    var num1, num2 float64
-    var op string
-
-    fmt.Print("Введите первое число: ")
-    fmt.Scan(&num1)
-
-    fmt.Print("Введите второе число: ")
-    fmt.Scan(&num2)
-
-    fmt.Print("Выберите операцию (+, -, *, /): ")
-    fmt.Scan(&op)
-
-    switch op {
-    case "+":
-        fmt.Printf("Результат: %.2f\n", num1+num2)
-    case "-":
-        fmt.Printf("Результат: %.2f\n", num1-num2)
-    case "*":
-        fmt.Printf("Результат: %.2f\n", num1*num2)
-    case "/":
-        if num2 == 0 {
-            fmt.Println("Ошибка: деление на ноль невозможно!")
-        } else {
-            fmt.Printf("Результат: %.2f\n", num1/num2)
+func selectionSort(arr []int) {
+    n := len(arr)
+    for i := 0; i < n-1; i++ {
+        minIdx := i
+        for j := i + 1; j < n; j++ {
+            if arr[j] < arr[minIdx] {
+                minIdx = j
+            }
         }
-    default:
-        fmt.Println("Ошибка: неизвестная операция.")
+        arr[i], arr[minIdx] = arr[minIdx], arr[i]
     }
+}
+
+func main() {
+    rand.Seed(time.Now().UnixNano())
+
+    size := 10
+    arr := make([]int, size)
+    for i := 0; i < size; i++ {
+        arr[i] = rand.Intn(100) 
+    }
+
+    fmt.Println("Исходный массив:", arr)
+
+
+    selectionSort(arr)
+
+    fmt.Println("Отсортированный массив:", arr)
 }
