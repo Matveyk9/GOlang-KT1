@@ -1,37 +1,70 @@
 package main
 
 import (
-    "bufio"
-    "fmt"
-    "math/rand"
-    "os"
-    "strconv"
-    "strings"
-    "time"
+	"fmt"
+	"sync"
+	"time"
 )
 
+type Cache struct {
+	data  map[string]string
+	mutex sync.Mutex
+}
+
+func NewCache() *Cache {
+	return &Cache{
+		data: make(map[string]string),
+	}
+}
+
+func (c *Cache) Set(key, value string) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	c.data[key] = value
+}
+
+func (c *Cache) Get(key string) (string, bool) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	val, ok := c.data[key]
+	return val, ok
+}
+
+func (c *Cache) Clear() {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	c.data = make(map[string]string)
+	fmt.Println("Кэш очищен")
+}
+
 func main() {
-    rand.Seed(time.Now().UnixNano())
-    target := rand.Intn(100) + 1
+	cache := NewCache()
 
-    reader := bufio.NewReader(os.Stdin)
-    for {
-        fmt.Print("Угадайте число от 1 до 100: ")
-        line, _ := reader.ReadString('\n')
-        line = strings.TrimSpace(line)
-        guess, err := strconv.Atoi(line)
-        if err != nil {
-            fmt.Println("Ошибка: введите число.")
-            continue
-        }
+	cache.Set("name", "Alice")
+	cache.Set("city", "Moscow")
+	fmt.Println("Данные в кэше добавлены")
 
-        if guess < target {
-            fmt.Println("Больше.")
-        } else if guess > target {
-            fmt.Println("Меньше.")
-        } else {
-            fmt.Println("Поздравляю! Вы угадали число!")
-            break
-        }
-    }
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	go func() {
+		for range ticker.C {
+			cache.Clear()
+		}
+	}()
+
+	// Демонстрация работы кэша
+	keys := []string{"name", "city"}
+
+	for i := 0; i < 15; i++ {
+		for _, key := range keys {
+			if val, ok := cache.Get(key); ok {
+				fmt.Println("Из кэша:", key, "=", val)
+			} else {
+				fmt.Println("Кэш пуст для ключа:", key)
+			}
+		}
+		time.Sleep(1 * time.Second)
+	}
+
 }
